@@ -1,0 +1,57 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model users {
+  id Int @id @default(autoincrement())
+  email String
+  password String
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+  profiles profiles?
+  address address[]
+}
+
+model profiles {
+  id Int @id @default(autoincrement())
+  name String
+  gender String
+  phone String
+  image String? // ? = tidak wajib
+  id_users Int @unique @map("users_id")
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+  user users @relation(fields: [id_users], references: [id])
+}
+
+model address {
+  id Int @id @default(autoincrement())
+  provinsi String
+  kab_kota String
+  kecamatan  String
+  detail String
+  id_users Int @unique
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+  users users @relation(fields: [id_users], references: [id])
+}
+
+model movie {
+  id Int @id @default(autoincrement())
+  title String
+  director String?
+  actor String?
+  writer String?
+  description String?
+  images String
+  createdAt DateTime @default(now())
+  updateAt DateTime @updatedAt
+}
