@@ -1,6 +1,6 @@
 const express = require("express"),
   app = express(),
-  port = process.env.PORT || 3000,
+  PORT = process.env.PORT || 3000,
   cors = require("cors"),
   router = require("./src/routes/index");
 
@@ -19,6 +19,6 @@ app.get("*", (req, res) => {
   });
 });
 
-app.listen(port, () => {
-  console.log(`Server is runing at PORT ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server is runing at PORT ${PORT}`);
 });
