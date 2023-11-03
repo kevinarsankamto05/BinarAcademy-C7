@@ -1,6 +1,6 @@
-const { users, profiles, address } = require("../models");
-const { imageKit } = require("../utils/imageKit");
-const { cryptPassword } = require("../utils/cryptPassword");
+const { users, profiles, address } = require("../models"),
+  { imageKit } = require("../utils/imageKit"),
+  { cryptPassword } = require("../utils/cryptPassword");
 
 module.exports = {
   getProfiles: async (req, res) => {

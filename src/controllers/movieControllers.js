@@ -1,5 +1,5 @@
-const { movie } = require("../models");
-const { imageKit } = require("../utils/imageKit");
+const { movie } = require("../models"),
+  { imageKit } = require("../utils/imageKit");
 
 module.exports = {
   createMovie: async (req, res) => {
@@ -21,9 +21,9 @@ module.exports = {
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({
-        error,
-      });
+      return res
+        .status(500)
+        .json({ error: true, message: "Internal Server Error" });
     }
   },
 
@@ -51,9 +51,9 @@ module.exports = {
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({
-        error,
-      });
+      return res
+        .status(500)
+        .json({ error: true, message: "Internal Server Error" });
     }
   },
 
@@ -65,9 +65,9 @@ module.exports = {
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({
-        error,
-      });
+      return res
+        .status(500)
+        .json({ error: true, message: "Internal Server Error" });
     }
   },
 
@@ -107,9 +107,9 @@ module.exports = {
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({
-        error,
-      });
+      return res
+        .status(500)
+        .json({ error: true, message: "Internal Server Error" });
     }
   },
 
@@ -155,9 +155,9 @@ module.exports = {
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({
-        error,
-      });
+      return res
+        .status(500)
+        .json({ error: true, message: "Internal Server Error" });
     }
   },
 
@@ -183,9 +183,9 @@ module.exports = {
       });
     } catch (error) {
       console.log(error);
-      return res.status(500).json({
-        error,
-      });
+      return res
+        .status(500)
+        .json({ error: true, message: "Internal Server Error" });
     }
   },
 };
