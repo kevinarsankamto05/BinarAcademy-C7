@@ -1,9 +1,14 @@
-const { users, profiles, address } = require("../models");
-const { cryptPassword, imageKit } = require("../utils");
+const { users, profiles, address } = require("../models"),
+  { cryptPassword } = require("../utils/cryptPassword"),
+  { imageKit } = require("../utils/imageKit"),
+  jwt = require("jsonwebtoken"),
+  bcrypt = require("bcrypt");
+require("dotenv").config();
+const secret_key = process.env.JWT_KEY || "no_secret";
 
 module.exports = {
   register: async (req, res) => {
-    const { email, password, name, gender, phone, image } = req.body;
+    const { email, password, name, gender, phone } = req.body;
     try {
       const data = await users.create({
         data: {
@@ -14,8 +19,7 @@ module.exports = {
               name: name,
               gender: gender,
               phone: phone,
-              image: image,
-              //   image: `/images/${req.file.filename}`,
+              image: `/images/profiles${req.file.filename}`,
             },
           },
         },
@@ -23,9 +27,6 @@ module.exports = {
           profiles: true,
         },
       });
-
-      console.log(req.file);
-
       return res.status(201).json({
         data,
       });
@@ -63,9 +64,6 @@ module.exports = {
           profiles: true,
         },
       });
-
-      console.log(req.file);
-
       return res.status(201).json({
         data,
       });
@@ -77,41 +75,58 @@ module.exports = {
     }
   },
 
-  upload: async (req, res) => {
+  login: async (req, res) => {
     try {
-      const fileToString = req.file.buffer.toString("base64");
-
-      const uploadFile = await imageKit.upload({
-        fileName: req.file.originalname,
-        file: fileToString,
-      });
-
-      return res.status(200).json({
-        data: {
-          name: uploadFile.name,
-          url: uploadFile.url,
-          type: uploadFile.fileType,
+      const findUser = await users.findFirst({
+        where: {
+          email: req.body.email,
         },
       });
+
+      if (!findUser) {
+        return res.status(404).json({
+          error: true,
+          message: "Your email is not registred in our system",
+        });
+      }
+
+      if (bcrypt.compareSync(req.body.password, findUser.password)) {
+        const token = jwt.sign({ id: findUser.id }, secret_key, {
+          expiresIn: "6h",
+        });
+        return res.status(200).json({
+          error: false,
+          message: "Successfully login",
+          data: {
+            token,
+          },
+        });
+      }
     } catch (error) {
-      console.log(error);
-      return res.status(500).json({
-        error,
-      });
+      console.error("Error fetching users:", error);
+      return res
+        .status(500)
+        .json({ error: true, message: "Internal Server Error" });
     }
   },
 
-  login: async () => {},
-
   getUsers: async (req, res) => {
     try {
-      const user = await users.findMany({
+      const user = await users.findUnique({
+        where: {
+          id: res.user.id,
+        },
         include: {
           profiles: true,
+          address: true,
         },
       });
 
-      const response = user.map((user) => ({
+      if (!user) {
+        return res.status(404).json({ error: true, message: "User not found" });
+      }
+
+      const response = {
         id: user.id,
         email: user.email,
         password: user.password,
@@ -121,7 +136,13 @@ module.exports = {
           phone: user.profiles.phone,
           image: user.profiles.image,
         },
-      }));
+        address: user.address.map((address) => ({
+          provinsi: address.provinsi,
+          kab_kota: address.kab_kota,
+          kecamatan: address.kecamatan,
+          detail: address.detail,
+        })),
+      };
 
       return res.status(200).json({
         error: false,
@@ -129,62 +150,38 @@ module.exports = {
         data: response,
       });
     } catch (error) {
+      console.log(error);
       return res
         .status(500)
         .json({ error: true, message: "Internal Server Error" });
     }
   },
 
-  updateUsers: async (req, res) => {
-    const userId = parseInt(req.params.id);
-    const { email, password, name, gender, phone } = req.body;
+  changePassword: async (req, res) => {
+    const user = await users.findUnique({
+      where: {
+        id: res.user.id,
+      },
+    });
 
-    try {
-      const existingUser = await users.findUnique({
-        where: { id: userId },
-        include: { profiles: true },
-      });
-
-      if (!existingUser) {
-        return res.status(404).json({ error: true, message: "User not found" });
-      }
-
-      const updatedProfile = {
-        name: name || existingUser.profiles.name,
-        gender: gender || existingUser.profiles.gender,
-        phone: phone || existingUser.profiles.phone,
-      };
-
-      if (req.file) {
-        updatedProfile.image = `/images/${req.file.filename}`;
-      } else {
-        updatedProfile.image = existingUser.profiles.image;
-      }
-
-      const updatedUser = await users.update({
-        where: { id: userId },
-        data: {
-          email: email || existingUser.email,
-          password: password
-            ? await cryptPassword(password)
-            : existingUser.password,
-          profiles: { update: updatedProfile },
+    if (bcrypt.compareSync(req.body.old_password, user.password)) {
+      const data = await users.update({
+        where: {
+          id: res.user.id,
         },
-        include: { profiles: true },
+        data: {
+          password: await cryptPassword(req.body.password),
+        },
       });
-
       return res.status(200).json({
         error: false,
-        message: "User updated successfully",
-        data: updatedUser,
+        message: "Your password has been successfully updated",
+        data: user,
       });
-    } catch (error) {
-      console.error("Error updating user:", error);
-      return res
-        .status(500)
-        .json({ error: true, message: "Internal Server Error" });
     }
+    return res.status(403).json({
+      error: true,
+      message: "Your old password is not valid",
+    });
   },
-
-  changePassword: async () => {},
 };

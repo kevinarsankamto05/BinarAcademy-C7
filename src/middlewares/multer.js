@@ -18,7 +18,7 @@ const generateStore = (destination) => {
 
 module.exports = {
   imageProfiles: multer({
-    storage: generateStore("../public/images/profiles"),
+    storage: generateStore("./public/images/profiles"),
     fileFilter: (req, file, callback) => {
       const allowed = ["image/png", "image/jpg", "image/jpeg"];
 
@@ -35,7 +35,7 @@ module.exports = {
     },
   }),
   imageMovies: multer({
-    storage: generateStore("../public/images/movies"),
+    storage: generateStore("./public/images/movies"),
     fileFilter: (req, file, callback) => {
       const allowed = ["image/png", "image/jpg", "image/jpeg"];
 

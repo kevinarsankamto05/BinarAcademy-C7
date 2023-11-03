@@ -47,11 +47,9 @@ model address {
 model movie {
   id Int @id @default(autoincrement())
   title String
-  director String?
-  actor String?
-  writer String?
-  description String?
-  images String
-  createdAt DateTime @default(now())
-  updateAt DateTime @updatedAt
+  director String
+  actor String
+  writer String
+  description String
+  images String?
 }

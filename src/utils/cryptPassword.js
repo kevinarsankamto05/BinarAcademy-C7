@@ -1,9 +1,9 @@
-// const bcrypt = require("bcrypt");
+const bcrypt = require("bcrypt");
 
-// module.exports = {
-//   cryptPassword: async (password) => {
-//     const salt = await bcrypt.genSalt(5);
+module.exports = {
+  cryptPassword: async (password) => {
+    const salt = await bcrypt.genSalt(5);
 
-//     return bcrypt.hash(password, salt);
-//   },
-// };
+    return bcrypt.hash(password, salt);
+  },
+};
